@@ -1,5 +1,8 @@
 port module Main exposing (main)
 
+import FileParser
+import Parser
+
 
 main : Program Flags () msg
 main =
@@ -76,12 +79,15 @@ htmlCode =
 init : Flags -> ( (), Cmd msg )
 init fileContents =
     let
+        { title, code } =
+            fileContents
+                |> FileParser.elliefy
+
         titleUrl =
-            encodeUrl "TITLEEEEE"
+            encodeUrl title
 
         elmCodeUrl =
-            fileContents
-                |> encodeUrl
+            encodeUrl code
 
         htmlCodeUrl =
             encodeUrl htmlCode

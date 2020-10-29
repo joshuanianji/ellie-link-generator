@@ -5,4 +5,4 @@ compile_elm:
 
 run:
 	@echo "running js"
-	node src/main.js test_files/HelloWorld.elm
+	node src/main.js test_files/BasicExample.elm
