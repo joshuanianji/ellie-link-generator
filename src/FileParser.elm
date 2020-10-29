@@ -117,7 +117,7 @@ moduleDeclaration =
 
 imports : Parser String
 imports =
-    Parser.chompUntil "\n\n"
+    Parser.chompUntil "\n\n\n"
         |> Parser.getChompedString
 
 
@@ -137,7 +137,7 @@ codeBlocks =
         parseType : Parser CodeBlock
         parseType =
             Parser.keyword "type"
-                |. Parser.chompUntilEndOr "\n\n"
+                |. Parser.chompUntilEndOr "\n\n\n"
                 |> Parser.getChompedString
                 |> Parser.map TypeDef
 
@@ -150,7 +150,7 @@ codeBlocks =
                             |= (Parser.getChompedString <| Parser.chompUntil "\n")
                             |. Parser.spaces
                             |. Parser.token name
-                            |= (Parser.getChompedString <| Parser.chompUntilEndOr "\n\n")
+                            |= (Parser.getChompedString <| Parser.chompUntilEndOr "\n\n\n")
                             |> Parser.map FunDef
                     )
     in
@@ -374,10 +374,10 @@ toString file =
 
         codeBlocksStr =
             List.map codeBlocksToString file.codeBlocks
-                |> String.join "\n\n"
+                |> String.join "\n\n\n"
     in
     [ moduleDeclarationStr, importsStr, codeBlocksStr ]
-        |> String.join "\n\n"
+        |> String.join "\n\n\n"
 
 
 codeBlocksToString : CodeBlock -> String

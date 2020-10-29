@@ -3281,7 +3281,7 @@ var $author$project$FileParser$codeBlocks = function () {
 			A2(
 				$elm$parser$Parser$ignorer,
 				$elm$parser$Parser$keyword('type'),
-				$elm$parser$Parser$chompUntilEndOr('\n\n'))));
+				$elm$parser$Parser$chompUntilEndOr('\n\n\n'))));
 	var parseFunction = A2(
 		$elm$parser$Parser$andThen,
 		function (name) {
@@ -3303,7 +3303,7 @@ var $author$project$FileParser$codeBlocks = function () {
 								$elm$parser$Parser$spaces),
 							$elm$parser$Parser$token(name))),
 					$elm$parser$Parser$getChompedString(
-						$elm$parser$Parser$chompUntilEndOr('\n\n'))));
+						$elm$parser$Parser$chompUntilEndOr('\n\n\n'))));
 		},
 		$elm$parser$Parser$getChompedString(
 			$elm$parser$Parser$chompUntil(' ')));
@@ -3336,7 +3336,7 @@ var $author$project$FileParser$codeBlocks = function () {
 	return A2($elm$parser$Parser$loop, _List_Nil, importsHelper);
 }();
 var $author$project$FileParser$imports = $elm$parser$Parser$getChompedString(
-	$elm$parser$Parser$chompUntil('\n\n'));
+	$elm$parser$Parser$chompUntil('\n\n\n'));
 var $author$project$FileParser$ModuleDeclaration = F2(
 	function (name, exposes) {
 		return {exposes: exposes, name: name};
@@ -3710,11 +3710,11 @@ var $author$project$FileParser$toString = function (file) {
 	var importsStr = file.imports;
 	var codeBlocksStr = A2(
 		$elm$core$String$join,
-		'\n\n',
+		'\n\n\n',
 		A2($elm$core$List$map, $author$project$FileParser$codeBlocksToString, file.codeBlocks));
 	return A2(
 		$elm$core$String$join,
-		'\n\n',
+		'\n\n\n',
 		_List_fromArray(
 			[moduleDeclarationStr, importsStr, codeBlocksStr]));
 };
