@@ -5,7 +5,7 @@ import Parser exposing ((|.), (|=), DeadEnd, Parser, Problem(..), Step(..))
 
 
 -------------------
--- EXPORTS
+-- PARSING STUFF
 -- Elliefy makes the code renderable in Ellie. WIP
 -------------------
 
@@ -85,15 +85,15 @@ type alias FunInfo =
 fileParser : Parser File
 fileParser =
     Parser.succeed File
-        |= moduleDeclaration
+        |= moduleDeclarationParser
         |. spacesAndComments
         |= imports
         |. spacesAndComments
         |= codeBlocks
 
 
-moduleDeclaration : Parser ModuleDeclaration
-moduleDeclaration =
+moduleDeclarationParser : Parser ModuleDeclaration
+moduleDeclarationParser =
     let
         moduleName : Parser String
         moduleName =
@@ -311,18 +311,12 @@ changeModuleNameTo newName file =
 
 
 elliefyExports : File -> File
-elliefyExports file =
-    case file.moduleDeclaration.exposes of
+elliefyExports ({ moduleDeclaration } as file) =
+    case moduleDeclaration.exposes of
         [ "example" ] ->
             let
                 newExposes =
                     [ "main" ]
-
-                mDeclaration =
-                    file.moduleDeclaration
-
-                newMDeclaration =
-                    { mDeclaration | exposes = newExposes }
 
                 -- rename instances of "example" to "main"
                 newCodeBlocks =
@@ -338,13 +332,13 @@ elliefyExports file =
                                         else
                                             FunDef funData
 
-                                    typeDef ->
+                                    TypeDef _ ->
                                         -- do not change type definitions
-                                        typeDef
+                                        block
                             )
             in
             { file
-                | moduleDeclaration = newMDeclaration
+                | moduleDeclaration = { moduleDeclaration | exposes = newExposes }
                 , codeBlocks = newCodeBlocks
             }
 
@@ -388,38 +382,3 @@ codeBlocksToString block =
 
         FunDef { funName, typeAnnotation, val } ->
             funName ++ typeAnnotation ++ "\n" ++ funName ++ val
-
-
-
--------------------
--- TESTS
--------------------
-
-
-closeableExample =
-    Ok
-        { codeBlocks =
-            [ TypeDef "type alias Model =\n    { closeableAlerts : CloseableAlertStack Msg\n    }"
-            , TypeDef "type Msg\n    = AlertMsg Alert.Msg"
-            , FunDef
-                { funName = "init"
-                , typeAnnotation = " : Model"
-                , val = " =\n    { closeableAlerts =\n        initAlertStack AlertMsg\n            [ alert \"Warning Text Warning Text Warning TextW arning Text Warning Text Warning TextWarning Text\"\n                |> withType Warning\n            , alert \"Normal alertNormal alertNormal alertNormal alertNormal alertNormal alert\"\n            , alert \"Error Text\"\n                |> withDescription \"Error Description Error Description Error Description Error Description Error Description Error Description\"\n                |> withType Error\n            ]\n    }"
-                }
-            , FunDef
-                { funName = "update"
-                , typeAnnotation = " : Msg -> Model -> ( Model, Cmd Msg )"
-                , val = " msg model =\n    case msg of\n        AlertMsg alertMsg ->\n            let\n                ( alertModel, alertCmd ) =\n                    updateAlertStack AlertMsg alertMsg model.closeableAlerts\n            in\n            ( { closeableAlerts = alertModel }\n            , alertCmd\n            )"
-                }
-            , FunDef
-                { funName = "view"
-                , typeAnnotation = " : Model -> Html Msg"
-                , val = " model =\n    div\n        [ style \"width\" \"100%\"\n        ]\n        [ stackToHtml model.closeableAlerts ]\n"
-                }
-            ]
-        , imports = "import Ant.Alert as Alert\n    exposing\n        ( Alert\n        , AlertType(..)\n        , CloseableAlertStack\n        , alert\n        , initAlertStack\n        , stackToHtml\n        , toHtml\n        , updateAlertStack\n        , withDescription\n        , withType\n        )\nimport Ant.Space as Space exposing (space, withSize)\nimport Html exposing (Html, div)\nimport Html.Attributes exposing (style)"
-        , moduleDeclaration =
-            { exposes = [ "Model", "Msg", "init", "update", "view" ]
-            , name = "Routes.AlertComponent.CloseableExample"
-            }
-        }
